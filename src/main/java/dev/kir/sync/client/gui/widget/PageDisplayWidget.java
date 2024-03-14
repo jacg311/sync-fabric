@@ -4,6 +4,7 @@ import dev.kir.sync.util.client.render.ColorUtil;
 import dev.kir.sync.util.client.render.RenderSystemUtil;
 import dev.kir.sync.util.math.Radians;
 import net.minecraft.client.font.TextRenderer;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 import net.minecraft.util.DyeColor;
@@ -129,19 +130,19 @@ public class PageDisplayWidget<TKey, UData> extends AbstractWidget {
     }
 
     @Override
-    protected void renderContent(MatrixStack matrices, int mouseX, int mouseY, float delta) {
+    protected void renderContent(DrawContext drawContext, int mouseX, int mouseY, float delta) {
         if (this.hasMorePages()) {
-            this.renderTitleAndPagination(matrices);
+            this.renderTitleAndPagination(drawContext);
         } else {
-            this.renderTitle(matrices);
+            this.renderTitle(drawContext);
         }
     }
 
-    private void renderTitle(MatrixStack matrices) {
-        RenderSystemUtil.drawCenteredText(this.selectedKeyAsText, matrices, this.cX, this.cY, this.scale, this.textColor, true);
+    private void renderTitle(DrawContext drawContext) {
+        RenderSystemUtil.drawCenteredText(drawContext, this.selectedKeyAsText, this.cX, this.cY, this.scale, this.textColor, true);
     }
 
-    private void renderTitleAndPagination(MatrixStack matrices) {
+    private void renderTitleAndPagination(DrawContext drawContext) {
         String paginationText = String.format("%s / %s", this.selectedPageIndex + 1, this.selectedSectionPageCount);
         TextRenderer textRenderer = RenderSystemUtil.getTextRenderer();
         float paginationTextScale = 0.5F;
@@ -154,10 +155,22 @@ public class PageDisplayWidget<TKey, UData> extends AbstractWidget {
         float top = this.cY - height / 2F;
         float boxTop = top + titleHeight + spacing - titleHeight * paginationTextScale * 0.125F;
         float boxLeft = this.cX - paginationBoxWidth / 2F;
-        RenderSystemUtil.drawRectangle(matrices, boxLeft, boxTop, paginationBoxWidth / this.scale, titleHeight / this.scale, titleHeight * 0.25F / this.scale, this.scale, 0, this.step, backgroundColor[0], backgroundColor[1], backgroundColor[2], backgroundColor[3]);
+        RenderSystemUtil.drawRectangle(drawContext.getMatrices(), boxLeft, boxTop, paginationBoxWidth / this.scale, titleHeight / this.scale, titleHeight * 0.25F / this.scale, this.scale, 0, this.step, backgroundColor[0], backgroundColor[1], backgroundColor[2], backgroundColor[3]);
 
-        RenderSystemUtil.drawCenteredText(this.selectedKeyAsText, matrices, this.cX, top + titleHeight, this.scale, this.textColor, true);
-        RenderSystemUtil.drawCenteredText(Text.of(paginationText), matrices, this.cX, top + 1.5F * titleHeight + spacing, this.scale * paginationTextScale, this.textColor, false);
+        RenderSystemUtil.drawCenteredText(drawContext, this.selectedKeyAsText, this.cX, top + titleHeight, this.scale, this.textColor, true);
+        RenderSystemUtil.drawCenteredText(drawContext, Text.of(paginationText), this.cX, top + 1.5F * titleHeight + spacing, this.scale * paginationTextScale, this.textColor, false);
+    }
+
+    private boolean focused;
+
+    @Override
+    public void setFocused(boolean focused) {
+        this.focused = focused;
+    }
+
+    @Override
+    public boolean isFocused() {
+        return focused;
     }
 
     public class Page {

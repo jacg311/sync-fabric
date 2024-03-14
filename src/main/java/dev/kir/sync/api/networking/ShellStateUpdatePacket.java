@@ -11,6 +11,7 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtSizeTracker;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.DyeColor;
 import net.minecraft.util.Identifier;
@@ -70,7 +71,7 @@ public class ShellStateUpdatePacket implements ClientPlayerPacket {
         this.type = buffer.readEnumConstant(ShellStateUpdateType.class);
         switch (this.type) {
             case ADD:
-                this.shellState = ShellState.fromNbt(buffer.readUnlimitedNbt());
+                this.shellState = ShellState.fromNbt((NbtCompound) buffer.readNbt(NbtSizeTracker.ofUnlimitedBytes()));
                 break;
 
             case REMOVE:

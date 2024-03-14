@@ -1,8 +1,10 @@
 package dev.kir.sync.block;
 
+import com.mojang.serialization.MapCodec;
 import dev.kir.sync.block.entity.ShellStorageBlockEntity;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.block.BlockWithEntity;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -22,6 +24,12 @@ public class ShellStorageBlock extends AbstractShellContainerBlock {
     public ShellStorageBlock(Settings settings) {
         super(settings);
         this.setDefaultState(this.getStateManager().getDefaultState().with(OPEN, false).with(ENABLED, false).with(POWERED, false));
+    }
+    public static final MapCodec<ShellStorageBlock> CODEC = createCodec(ShellStorageBlock::new);
+
+    @Override
+    protected MapCodec<? extends BlockWithEntity> getCodec() {
+        return CODEC;
     }
 
     public static boolean isEnabled(BlockState state) {
@@ -57,8 +65,8 @@ public class ShellStorageBlock extends AbstractShellContainerBlock {
             if (enabled != shouldBeEnabled) {
                 BlockPos secondPartPos = pos.offset(getDirectionTowardsAnotherPart(state));
                 if (enabled) {
-                    world.createAndScheduleBlockTick(pos, this, 4);
-                    world.createAndScheduleBlockTick(secondPartPos, this, 4);
+                    world.scheduleBlockTick(pos, this, 4);
+                    world.scheduleBlockTick(secondPartPos, this, 4);
                 } else {
                     world.setBlockState(pos, state.with(ENABLED, true), 2);
                     BlockState secondPartState = world.getBlockState(secondPartPos);

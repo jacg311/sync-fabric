@@ -6,8 +6,9 @@ import net.fabricmc.fabric.api.item.v1.FabricItemSettings;
 import net.minecraft.block.Block;
 import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
+import net.minecraft.registry.Registries;
+import net.minecraft.registry.Registry;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.registry.Registry;
 
 public final class SyncItems {
     public static final Item SYNC_CORE;
@@ -16,10 +17,10 @@ public final class SyncItems {
     public static final Item TREADMILL;
 
     static {
-        SYNC_CORE = register("sync_core", new FabricItemSettings().group(SyncItemGroups.MAIN).maxCount(16));
-        SHELL_STORAGE = register(SyncBlocks.SHELL_STORAGE, new FabricItemSettings().group(SyncItemGroups.MAIN).maxCount(1));
-        SHELL_CONSTRUCTOR = register(SyncBlocks.SHELL_CONSTRUCTOR, new FabricItemSettings().group(SyncItemGroups.MAIN).maxCount(1));
-        TREADMILL = register(SyncBlocks.TREADMILL, new FabricItemSettings().group(SyncItemGroups.MAIN).maxCount(1));
+        SYNC_CORE = register("sync_core", new FabricItemSettings().maxCount(16));
+        SHELL_STORAGE = register(SyncBlocks.SHELL_STORAGE, new FabricItemSettings().maxCount(1));
+        SHELL_CONSTRUCTOR = register(SyncBlocks.SHELL_CONSTRUCTOR, new FabricItemSettings().maxCount(1));
+        TREADMILL = register(SyncBlocks.TREADMILL, new FabricItemSettings().maxCount(1));
     }
 
     public static void init() { }
@@ -27,13 +28,13 @@ public final class SyncItems {
     private static Item register(String id, Item.Settings settings) {
         Identifier trueId = Sync.locate(id);
         Item item = new Item(settings);
-        return Registry.register(Registry.ITEM, trueId, item);
+        return Registry.register(Registries.ITEM, trueId, item);
     }
 
     private static Item register(Block block, Item.Settings settings) {
-        Identifier id = Registry.BLOCK.getId(block);
+        Identifier id = Registries.BLOCK.getId(block);
         BlockItem item = new BlockItem(block, settings);
         item.appendBlocks(Item.BLOCK_ITEMS, item);
-        return Registry.register(Registry.ITEM, id, item);
+        return Registry.register(Registries.ITEM, id, item);
     }
 }

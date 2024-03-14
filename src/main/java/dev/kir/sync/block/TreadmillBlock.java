@@ -1,5 +1,6 @@
 package dev.kir.sync.block;
 
+import com.mojang.serialization.MapCodec;
 import dev.kir.sync.block.entity.SyncBlockEntities;
 import dev.kir.sync.block.entity.TickableBlockEntity;
 import dev.kir.sync.block.entity.TreadmillBlockEntity;
@@ -45,6 +46,13 @@ public class TreadmillBlock extends HorizontalFacingBlock implements BlockEntity
     public TreadmillBlock(Settings settings) {
         super(settings);
         this.setDefaultState(this.stateManager.getDefaultState().with(PART, Part.BACK));
+    }
+
+    public static final MapCodec<TreadmillBlock> CODEC = createCodec(TreadmillBlock::new);
+
+    @Override
+    protected MapCodec<? extends HorizontalFacingBlock> getCodec() {
+        return CODEC;
     }
 
     public static boolean isBack(BlockState state) {
@@ -104,7 +112,7 @@ public class TreadmillBlock extends HorizontalFacingBlock implements BlockEntity
 
     @Override
     public BlockState getPlacementState(ItemPlacementContext ctx) {
-        Direction direction = ctx.getPlayerFacing();
+        Direction direction = ctx.getHorizontalPlayerFacing();
         BlockPos blockPos = ctx.getBlockPos();
         BlockPos blockPos2 = blockPos.offset(direction);
         return ctx.getWorld().getBlockState(blockPos2).canReplace(ctx) ? this.getDefaultState().with(FACING, direction) : null;
@@ -122,7 +130,7 @@ public class TreadmillBlock extends HorizontalFacingBlock implements BlockEntity
     }
 
     @Override
-    public void onBreak(World world, BlockPos pos, BlockState state, PlayerEntity player) {
+    public BlockState onBreak(World world, BlockPos pos, BlockState state, PlayerEntity player) {
         if (!world.isClient && player.isCreative()) {
             Part part = state.get(PART);
             if (part == Part.FRONT) {
@@ -134,7 +142,7 @@ public class TreadmillBlock extends HorizontalFacingBlock implements BlockEntity
                 }
             }
         }
-        super.onBreak(world, pos, state, player);
+        return super.onBreak(world, pos, state, player);
     }
 
     @Override

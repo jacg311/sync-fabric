@@ -14,6 +14,7 @@ import dev.kir.sync.util.math.Radians;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.Element;
 import net.minecraft.client.gui.Selectable;
 import net.minecraft.client.gui.screen.Screen;
@@ -54,7 +55,7 @@ public class ShellSelectorGUI extends Screen {
     public void init() {
         ClientPlayerEntity player = Objects.requireNonNull(MinecraftClient.getInstance().player);
         Stream<ShellState> data = ((Shell)player).getAvailableShellStates();
-        Identifier selectedWorld = player.world.getRegistryKey().getValue();
+        Identifier selectedWorld = player.getWorld().getRegistryKey().getValue();
 
         this.wasClosed = false;
         this.arrowButtons = createArrowButtons(this.width, this.height, ARROW_TITLES, List.of(this::previousSection, this::nextPage, this::nextSection, this::previousPage));
@@ -147,27 +148,27 @@ public class ShellSelectorGUI extends Screen {
     }
 
     @Override
-    public void renderBackground(MatrixStack matrices, int vOffset) {
+    public void renderBackground(DrawContext drawContext, int mouseX, int mouseY, float delta) {
         if (Objects.requireNonNull(this.client).world != null) {
-            this.fillGradient(matrices, 0, 0, this.width, this.height, BACKGROUND_COLOR, BACKGROUND_COLOR);
+            drawContext.fillGradient(0, 0, this.width, this.height, BACKGROUND_COLOR, BACKGROUND_COLOR);
         } else {
-            super.renderBackground(matrices, vOffset);
+            super.renderBackground(drawContext, mouseX, mouseY, delta);
         }
     }
 
     @Override
-    public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
-        this.renderBackground(matrices);
-        MSAAFramebuffer.use(MSAAFramebuffer.MAX_SAMPLES, () -> super.render(matrices, mouseX, mouseY, delta));
-        this.renderTooltips(matrices, mouseX, mouseY);
+    public void render(DrawContext drawContext, int mouseX, int mouseY, float delta) {
+        this.renderBackground(drawContext, mouseX, mouseY, delta);
+        MSAAFramebuffer.use(MSAAFramebuffer.MAX_SAMPLES, () -> super.render(drawContext, mouseX, mouseY, delta));
+        this.renderTooltips(drawContext, mouseX, mouseY);
     }
 
-    protected void renderTooltips(MatrixStack matrices, int mouseX, int mouseY) {
+    protected void renderTooltips(DrawContext drawContext, int mouseX, int mouseY) {
         for (Element child : this.children()) {
             if (child instanceof Selectable selectable && selectable.getType() != Selectable.SelectionType.NONE) {
                 Text tooltipText = selectable instanceof TooltipProvider tooltipProvider ? tooltipProvider.getTooltip() : null;
                 if (tooltipText != null) {
-                    this.renderTooltip(matrices, tooltipText, mouseX, mouseY);
+                    drawContext.drawTooltip(textRenderer, tooltipText, mouseX, mouseY);
                 }
                 return;
             }

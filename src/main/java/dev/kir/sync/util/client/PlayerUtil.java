@@ -37,7 +37,7 @@ public final class PlayerUtil {
     }
 
     private static boolean existsInTargetWorld(Entity entity, Identifier worldId) {
-        return worldId == ANY_WORLD || WorldUtil.isOf(worldId, entity.world);
+        return worldId == ANY_WORLD || WorldUtil.isOf(worldId, entity.getWorld());
     }
 
     private static void executeUpdates(ClientPlayerEntity player, ClientWorld world, ConcurrentLinkedQueue<PlayerUpdate> queue) {

@@ -243,7 +243,7 @@ public class ShellState {
             shell.saturationLevel = 5;
         }
 
-        shell.world = WorldUtil.getId(player.world);
+        shell.world = WorldUtil.getId(player.getWorld());
         shell.pos = pos;
 
         return shell;
@@ -287,7 +287,9 @@ public class ShellState {
 
         ItemEntity item = new ItemEntity(world, pos.getX(), pos.getY(), pos.getZ(), stack);
         item.setPickupDelay(40);
-        item.setThrower(this.getOwnerUuid());
+       if (world instanceof ServerWorld) {
+           item.setThrower(((ServerWorld) world).getEntity(this.getOwnerUuid()));
+       }
 
         float h = world.random.nextFloat() * 0.5F;
         float v = world.random.nextFloat() * 2 * Radians.R_PI;

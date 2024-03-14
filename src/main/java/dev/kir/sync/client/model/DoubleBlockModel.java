@@ -9,12 +9,11 @@ import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.Direction;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Environment(EnvType.CLIENT)
 public abstract class DoubleBlockModel extends Model {
@@ -35,7 +34,7 @@ public abstract class DoubleBlockModel extends Model {
 
 
     protected ModelPart createCuboid(int textureOffsetU, int textureOffsetV, float x, float y, float z, float xSize, float ySize, float zSize) {
-        ModelPart.Cuboid cuboid = new ModelPart.Cuboid(textureOffsetU, textureOffsetV, 0, 0, 0, xSize, ySize, zSize, 0, 0, 0, true, this.textureWidth, this.textureHeight);
+        ModelPart.Cuboid cuboid = new ModelPart.Cuboid(textureOffsetU, textureOffsetV, 0, 0, 0, xSize, ySize, zSize, 0, 0, 0, true, this.textureWidth, this.textureHeight, Arrays.stream(Direction.values()).collect(Collectors.toSet()));
         ModelPart part = new ModelPart(List.of(cuboid), Map.of());
         part.setPivot(x, y, z);
         return part;

@@ -14,9 +14,10 @@ import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.block.entity.BlockEntityRendererFactory;
 import net.minecraft.item.Item;
+import net.minecraft.registry.Registries;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.registry.Registry;
+import net.minecraft.registry.Registry;
 
 @Environment(EnvType.CLIENT)
 public final class SyncRenderers {
@@ -29,10 +30,10 @@ public final class SyncRenderers {
     private static <E extends BlockEntity> void register(BlockEntityRendererFactory<? super E> rendererFactory, BlockEntityType<E> blockEntityType) {
         BlockEntityRendererRegistry.register(blockEntityType, rendererFactory);
 
-        Identifier id = Registry.BLOCK_ENTITY_TYPE.getId(blockEntityType);
-        Block block = Registry.BLOCK.get(id);
-        Item item = Registry.ITEM.get(id);
-        if (Registry.BLOCK.getId(block).equals(Registry.BLOCK.getDefaultId()) || Registry.ITEM.getId(item).equals(Registry.ITEM.getDefaultId())) {
+        Identifier id = Registries.BLOCK_ENTITY_TYPE.getId(blockEntityType);
+        Block block = Registries.BLOCK.get(id);
+        Item item = Registries.ITEM.get(id);
+        if (Registries.BLOCK.getId(block).equals(Registries.BLOCK.getDefaultId()) || Registries.ITEM.getId(item).equals(Registries.ITEM.getDefaultId())) {
             return;
         }
 

@@ -10,6 +10,7 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtSizeTracker;
 import net.minecraft.network.PacketByteBuf;
 import net.minecraft.util.Identifier;
 
@@ -44,7 +45,7 @@ public class ShellUpdatePacket implements ClientPlayerPacket {
     public void read(PacketByteBuf buffer) {
         this.worldId = buffer.readIdentifier();
         this.isArtificial = buffer.readBoolean();
-        this.states = buffer.readList(subBuffer -> ShellState.fromNbt(subBuffer.readUnlimitedNbt()));
+        this.states = buffer.readList(subBuffer -> ShellState.fromNbt((NbtCompound) subBuffer.readNbt(NbtSizeTracker.ofUnlimitedBytes())));
     }
 
     @Override

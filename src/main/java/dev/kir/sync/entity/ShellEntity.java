@@ -33,7 +33,7 @@ public class ShellEntity extends OtherClientPlayerEntity {
     }
 
     public ShellEntity(ClientWorld world, ShellState state) {
-        super(world, getPlayerEntry(state).getProfile(), getPlayerEntry(state).getPublicKeyData());
+        super(world, getPlayerEntry(state).getProfile());
         this.isActive = false;
         this.pitchProgress = 0;
         this.state = state;
@@ -64,16 +64,10 @@ public class ShellEntity extends OtherClientPlayerEntity {
 
     @Override
     protected void dropInventory() {
-        if (this.world instanceof ServerWorld serverWorld) {
-            this.state.dropInventory(serverWorld, this.getBlockPos());
-        }
     }
 
     @Override
     protected void dropXp() {
-        if (this.world instanceof ServerWorld serverWorld) {
-            this.state.dropXp(serverWorld, this.getBlockPos());
-        }
     }
 
     @Override
@@ -114,7 +108,7 @@ public class ShellEntity extends OtherClientPlayerEntity {
             }
 
             if (entry == null) {
-                entry = new PlayerListEntry(new PlayerListS2CPacket.Entry(new GameProfile(state.getOwnerUuid(), state.getOwnerName()), 0, null, null, null), client.getServicesSignatureVerifier(), false);
+                entry = new PlayerListEntry(new GameProfile(state.getOwnerUuid(), state.getOwnerName()), false);
             }
 
             PLAYER_ENTRY_CACHE.put(state.getOwnerUuid(), entry);

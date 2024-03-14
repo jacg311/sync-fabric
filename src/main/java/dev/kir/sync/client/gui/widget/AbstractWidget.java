@@ -3,6 +3,7 @@ package dev.kir.sync.client.gui.widget;
 import dev.kir.sync.client.gui.TooltipProvider;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.Drawable;
 import net.minecraft.client.gui.Element;
 import net.minecraft.client.gui.Selectable;
@@ -31,14 +32,14 @@ public abstract class AbstractWidget implements Drawable, Selectable, TooltipPro
     }
 
     @Override
-    public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
+    public void render(DrawContext drawContext, int mouseX, int mouseY, float delta) {
         if (this.visible) {
             this.mouseMoved(mouseX, mouseY);
-            this.renderContent(matrices, mouseX, mouseY, delta);
+            this.renderContent(drawContext, mouseX, mouseY, delta);
         }
     }
 
-    protected abstract void renderContent(MatrixStack matrices, int mouseX, int mouseY, float delta);
+    protected abstract void renderContent(DrawContext drawContext, int mouseX, int mouseY, float delta);
 
     @Override
     public void mouseMoved(double mouseX, double mouseY) {

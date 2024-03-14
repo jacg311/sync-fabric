@@ -107,7 +107,7 @@ public abstract class AbstractShellContainerBlock extends BlockWithEntity {
         World world = ctx.getWorld();
         BlockPos blockPos = ctx.getBlockPos();
         if (World.isValid(blockPos) && world.getBlockState(blockPos.up()).canReplace(ctx)) {
-            return this.getDefaultState().with(FACING, ctx.getPlayerFacing()).with(HALF, DoubleBlockHalf.LOWER);
+            return this.getDefaultState().with(FACING, ctx.getHorizontalPlayerFacing()).with(HALF, DoubleBlockHalf.LOWER);
         }
 
         return null;
@@ -127,7 +127,7 @@ public abstract class AbstractShellContainerBlock extends BlockWithEntity {
     }
 
     @Override
-    public void onBreak(World world, BlockPos pos, BlockState state, PlayerEntity player) {
+    public BlockState onBreak(World world, BlockPos pos, BlockState state, PlayerEntity player) {
         boolean bottom = isBottom(state);
         BlockPos bottomPos = bottom ? pos : pos.down();
         if (!world.isClient && player.isCreative()) {
@@ -139,7 +139,7 @@ public abstract class AbstractShellContainerBlock extends BlockWithEntity {
                 }
             }
         }
-        super.onBreak(world, pos, state, player);
+        return super.onBreak(world, pos, state, player);
     }
 
     @Override

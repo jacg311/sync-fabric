@@ -11,15 +11,17 @@ import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.registry.DynamicRegistryManager;
+import net.minecraft.registry.Registries;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.random.Random;
 import net.minecraft.util.profiler.Profiler;
-import net.minecraft.util.registry.Registry;
-import net.minecraft.util.registry.RegistryEntry;
-import net.minecraft.util.registry.RegistryKey;
+import net.minecraft.registry.Registry;
+import net.minecraft.registry.entry.RegistryEntry;
+import net.minecraft.registry.RegistryKey;
 import net.minecraft.world.MutableWorldProperties;
 import net.minecraft.world.World;
 import net.minecraft.world.dimension.DimensionType;
@@ -40,8 +42,8 @@ abstract class ClientWorldMixin extends World {
     @Shadow
     private @Final MinecraftClient client;
 
-    private ClientWorldMixin(MutableWorldProperties properties, RegistryKey<World> registryRef, RegistryEntry<DimensionType> dimension, Supplier<Profiler> profiler, boolean isClient, boolean debugWorld, long seed, int maxChainedNeighborUpdates) {
-        super(properties, registryRef, dimension, profiler, isClient, debugWorld, seed, maxChainedNeighborUpdates);
+    protected ClientWorldMixin(MutableWorldProperties properties, RegistryKey<World> registryRef, DynamicRegistryManager registryManager, RegistryEntry<DimensionType> dimensionEntry, Supplier<Profiler> profiler, boolean isClient, boolean debugWorld, long biomeAccess, int maxChainedNeighborUpdates) {
+        super(properties, registryRef, registryManager, dimensionEntry, profiler, isClient, debugWorld, biomeAccess, maxChainedNeighborUpdates);
     }
 
     @Inject(method = "playSound(DDDLnet/minecraft/sound/SoundEvent;Lnet/minecraft/sound/SoundCategory;FFZJ)V", at = @At("HEAD"), cancellable = true)
@@ -73,20 +75,20 @@ abstract class ClientWorldMixin extends World {
         ci.cancel();
     }
 
-    @Inject(method = "playSoundFromEntity", at = @At("HEAD"), cancellable = true)
-    private void playSoundFromEntity(PlayerEntity except, Entity entity, SoundEvent sound, SoundCategory category, float volume, float pitch, long seed, CallbackInfo ci) {
-        if (except != this.client.player || !(entity instanceof TechnobladeTransformable) || !((TechnobladeTransformable)entity).isTechnoblade()) {
+    @Inject(method = "playSoundFromEntity(Lnet/minecraft/entity/player/PlayerEntity;Lnet/minecraft/entity/Entity;Lnet/minecraft/registry/entry/RegistryEntry;Lnet/minecraft/sound/SoundCategory;FFJ)V", at = @At("HEAD"), cancellable = true)
+    private void playSoundFromEntity(PlayerEntity source, Entity entity, RegistryEntry<SoundEvent> sound, SoundCategory category, float volume, float pitch, long seed, CallbackInfo ci) {
+        if (source != this.client.player || !(entity instanceof TechnobladeTransformable) || !((TechnobladeTransformable)entity).isTechnoblade()) {
             return;
         }
 
         Technoblade Technoblade = ((TechnobladeTransformable)entity).asTechnoblade();
-        sound = this.getTechnobladeSound(sound);
-        if (sound == null) {
+        SoundEvent sound1 = this.getTechnobladeSound(sound.value());
+        if (sound1 == null) {
             ci.cancel();
             return;
         }
 
-        this.client.getSoundManager().play(new EntityTrackingSoundInstance(sound, Technoblade.getSoundCategory(), volume, pitch, entity, seed));
+        this.client.getSoundManager().play(new EntityTrackingSoundInstance(sound1, Technoblade.getSoundCategory(), volume, pitch, entity, seed));
         ci.cancel();
     }
 
@@ -96,7 +98,7 @@ abstract class ClientWorldMixin extends World {
             return null;
         }
 
-        SoundEvent fixedSound = Registry.SOUND_EVENT.get(new Identifier(originalSoundId.getNamespace(), originalSoundId.getPath().replaceFirst("\\.[^.]+", ".player")));
+        SoundEvent fixedSound = Registries.SOUND_EVENT.get(new Identifier(originalSoundId.getNamespace(), originalSoundId.getPath().replaceFirst("\\.[^.]+", ".player")));
         if (fixedSound == null) {
             fixedSound = sound;
         }

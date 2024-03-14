@@ -9,7 +9,8 @@ import me.shedaniel.autoconfig.annotation.Config;
 import me.shedaniel.autoconfig.annotation.ConfigEntry;
 import me.shedaniel.autoconfig.serializer.GsonConfigSerializer;
 import net.minecraft.entity.EntityType;
-import net.minecraft.util.registry.Registry;
+import net.minecraft.registry.Registries;
+import net.minecraft.registry.Registry;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -238,7 +239,7 @@ public class SyncClothConfig implements SyncConfig, ConfigData {
         }
 
         public EnergyMapEntry(EntityType<?> entityType, long outputEnergyQuantity) {
-            this(Registry.ENTITY_TYPE.getId(entityType).toString(), outputEnergyQuantity);
+            this(Registries.ENTITY_TYPE.getId(entityType).toString(), outputEnergyQuantity);
         }
 
         public EnergyMapEntry(String entityId, long outputEnergyQuantity) {

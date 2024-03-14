@@ -43,6 +43,6 @@ public class ShellDestroyedPacket implements ClientPlayerPacket {
             player.clientWorld.addBlockBreakParticles(this.pos, Blocks.DEEPSLATE.getDefaultState());
             player.clientWorld.addBlockBreakParticles(this.pos.up(), Blocks.DEEPSLATE.getDefaultState());
         }
-        player.clientWorld.playSound(this.pos, SoundEvents.BLOCK_DEEPSLATE_BREAK, SoundCategory.BLOCKS, 1F, player.getSoundPitch(), true);
+        player.clientWorld.playSound(player, this.pos, SoundEvents.BLOCK_DEEPSLATE_BREAK, SoundCategory.BLOCKS, 1F, player.getSoundPitch());
     }
 }

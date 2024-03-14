@@ -15,7 +15,7 @@ import net.minecraft.client.render.entity.model.PlayerEntityModel;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.Vec3f;
+import net.minecraft.util.math.RotationAxis;
 
 public class ShellEntityRenderer extends PlayerEntityRenderer {
     private final ShellModel<PlayerEntityModel<?>> shellModel;
@@ -34,14 +34,14 @@ public class ShellEntityRenderer extends PlayerEntityRenderer {
         if (player instanceof ShellEntity shell && !shell.isActive) {
             float progress = shell.getState().getProgress();
 
-            matrices.multiply(Vec3f.POSITIVE_Y.getDegreesQuaternion(180F));
+            matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(180F));
             matrices.scale(-1.0F, -1.0F, 1.0F);
             this.scale(player, matrices, yaw);
             matrices.translate(0.0D, -1.5010000467300415D, 0.0D);
-            matrices.multiply(Vec3f.POSITIVE_Y.getDegreesQuaternion(yaw));
+            matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(yaw));
 
             this.applyStateToModel(this.shellModel, shell.getState());
-            VertexConsumer consumer = this.getVertexConsumerForPartiallyTexturedEntity(shell, progress, this.shellModel.getLayer(shell.getSkinTexture()), vertexConsumers);
+            VertexConsumer consumer = this.getVertexConsumerForPartiallyTexturedEntity(shell, progress, this.shellModel.getLayer(shell.getSkinTextures().texture()), vertexConsumers);
             this.shellModel.render(matrices, consumer, light, getOverlay(player, tickDelta), 1F, 1F, 1F, 1F);
             if (progress >= ShellState.PROGRESS_DONE) {
                 for (FeatureRenderer<AbstractClientPlayerEntity, PlayerEntityModel<AbstractClientPlayerEntity>> feature : this.features) {
@@ -50,9 +50,9 @@ public class ShellEntityRenderer extends PlayerEntityRenderer {
             }
         } else {
             Direction direction = Direction.fromRotation(yaw);
-            matrices.multiply(Vec3f.POSITIVE_Y.getDegreesQuaternion(yaw));
+            matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(yaw));
             if (direction == Direction.WEST || direction == Direction.EAST) {
-                matrices.multiply(Vec3f.POSITIVE_Y.getDegreesQuaternion(180F));
+                matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(180F));
             }
 
             float maxPitch = player.getEquippedStack(EquipmentSlot.CHEST).isEmpty() ? 15 : 5;

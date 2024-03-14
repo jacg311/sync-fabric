@@ -59,8 +59,8 @@ abstract class ClientPlayerEntityMixin extends AbstractClientPlayerEntity implem
     private ConcurrentMap<UUID, ShellState> shellsById = new ConcurrentHashMap<>();
 
 
-    private ClientPlayerEntityMixin(ClientWorld world, GameProfile profile, PlayerPublicKey publicKey) {
-        super(world, profile, publicKey);
+    private ClientPlayerEntityMixin(ClientWorld world, GameProfile profile) {
+        super(world, profile);
     }
 
 
@@ -199,7 +199,7 @@ abstract class ClientPlayerEntityMixin extends AbstractClientPlayerEntity implem
     public void onKillableEntityDeath() {
         boolean canRespawn = this.isArtificial() && this.shellsById.size() != 0;
         BlockPos pos = this.getBlockPos();
-        Identifier world = WorldUtil.getId(this.world);
+        Identifier world = WorldUtil.getId(this.getWorld());
         Comparator<ShellState> comparator = ShellPriority.asComparator(world, pos, Sync.getConfig().syncPriority().stream().map(SyncConfig.ShellPriorityEntry::priority));
         ShellState respawnShell = canRespawn ? this.shellsById.values().stream().filter(x -> this.canBeApplied(x) && x.getProgress() >= ShellState.PROGRESS_DONE).min(comparator).orElse(null) : null;
         if (respawnShell != null) {

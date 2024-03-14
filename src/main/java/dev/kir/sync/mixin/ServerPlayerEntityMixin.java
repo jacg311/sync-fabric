@@ -19,6 +19,7 @@ import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.network.PacketCallbacks;
 import net.minecraft.network.encryption.PlayerPublicKey;
+import net.minecraft.network.packet.c2s.play.TeleportConfirmC2SPacket;
 import net.minecraft.network.packet.s2c.play.*;
 import net.minecraft.scoreboard.AbstractTeam;
 import net.minecraft.server.MinecraftServer;
@@ -87,8 +88,8 @@ abstract class ServerPlayerEntityMixin extends PlayerEntity implements ServerShe
     private Map<UUID, Pair<ShellStateUpdateType, ShellState>> shellStateChanges = new ConcurrentHashMap<>();
 
 
-    private ServerPlayerEntityMixin(World world, BlockPos pos, float yaw, GameProfile profile, PlayerPublicKey publicKey) {
-        super(world, pos, yaw, profile, publicKey);
+    private ServerPlayerEntityMixin(World world, BlockPos pos, float yaw, GameProfile profile) {
+        super(world, pos, yaw, profile);
     }
 
 
@@ -114,7 +115,7 @@ abstract class ServerPlayerEntityMixin extends PlayerEntity implements ServerShe
     public Either<ShellState, PlayerSyncEvents.SyncFailureReason> sync(ShellState state) {
         ServerPlayerEntity player = (ServerPlayerEntity)(Object)this;
         BlockPos currentPos = this.getBlockPos();
-        ServerWorld currentWorld = player.getWorld();
+        World currentWorld = player.getWorld();
 
         if (!this.canBeApplied(state) || state.getProgress() < ShellState.PROGRESS_DONE) {
             return Either.right(PlayerSyncEvents.SyncFailureReason.INVALID_SHELL);
@@ -174,7 +175,7 @@ abstract class ServerPlayerEntityMixin extends PlayerEntity implements ServerShe
         Objects.requireNonNull(state);
 
         ServerPlayerEntity serverPlayer = (ServerPlayerEntity)(Object)this;
-        MinecraftServer server = Objects.requireNonNull(this.world.getServer());
+        MinecraftServer server = Objects.requireNonNull(this.getServerWorld().getServer());
         ServerWorld targetWorld = WorldUtil.findWorld(server.getWorlds(), state.getWorld()).orElse(null);
         if (targetWorld == null) {
             return;
@@ -277,7 +278,7 @@ abstract class ServerPlayerEntityMixin extends PlayerEntity implements ServerShe
         if (this.shellDirty) {
             this.shellDirty = false;
             this.shellStateChanges.clear();
-            new ShellUpdatePacket(WorldUtil.getId(this.world), this.isArtificial, this.shellsById.values()).send(player);
+            new ShellUpdatePacket(WorldUtil.getId(this.getWorld()), this.isArtificial, this.shellsById.values()).send(player);
         }
 
         for (Pair<ShellStateUpdateType, ShellState> upd : this.shellStateChanges.values()) {
@@ -297,14 +298,14 @@ abstract class ServerPlayerEntityMixin extends PlayerEntity implements ServerShe
             return;
         }
 
-        if (this.world.getGameRules().getBoolean(GameRules.SHOW_DEATH_MESSAGES)) {
+        if (this.getWorld().getGameRules().getBoolean(GameRules.SHOW_DEATH_MESSAGES)) {
             this.sendDeathMessageInChat();
         } else {
             this.sendEmptyDeathMessageInChat();
         }
 
         this.dropShoulderEntities();
-        if (this.world.getGameRules().getBoolean(GameRules.FORGIVE_DEAD_PLAYERS)) {
+        if (this.getWorld().getGameRules().getBoolean(GameRules.FORGIVE_DEAD_PLAYERS)) {
             this.forgiveMobAnger();
         }
 
@@ -324,12 +325,12 @@ abstract class ServerPlayerEntityMixin extends PlayerEntity implements ServerShe
         }
 
         if (this.undead) {
-            this.onDeath(DamageSource.MAGIC);
+            this.onDeath(getWorld().getDamageSources().magic());
             this.undead = false;
         }
 
         if (this.deathTime == 20) {
-            this.world.sendEntityStatus(this, (byte)60);
+            this.getWorld().sendEntityStatus(this, (byte)60);
             this.remove(RemovalReason.KILLED);
         }
         return true;
@@ -338,11 +339,11 @@ abstract class ServerPlayerEntityMixin extends PlayerEntity implements ServerShe
     @Unique
     private void sendDeathMessageInChat() {
         Text text = this.getDamageTracker().getDeathMessage();
-        this.networkHandler.sendPacket(new DeathMessageS2CPacket(this.getDamageTracker(), text), PacketCallbacks.of(() -> {
+        this.networkHandler.send(new DeathMessageS2CPacket(this.getId(), text), PacketCallbacks.of(() -> {
             String truncatedString = text.asTruncatedString(256);
             Text messageWasTooLong = Text.translatable("death.attack.message_too_long", Text.literal(truncatedString).formatted(Formatting.YELLOW));
             Text magic = Text.translatable("death.attack.even_more_magic", this.getDisplayName()).styled((style) -> style.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, messageWasTooLong)));
-            return new DeathMessageS2CPacket(this.getDamageTracker(), magic);
+            return new DeathMessageS2CPacket(this.getId(), magic);
         }));
         AbstractTeam abstractTeam = this.getScoreboardTeam();
         if (abstractTeam != null && abstractTeam.getDeathMessageVisibilityRule() != AbstractTeam.VisibilityRule.ALWAYS) {
@@ -358,7 +359,7 @@ abstract class ServerPlayerEntityMixin extends PlayerEntity implements ServerShe
 
     @Unique
     private void sendEmptyDeathMessageInChat() {
-        this.networkHandler.sendPacket(new DeathMessageS2CPacket(this.getDamageTracker(), Text.empty()));
+        this.networkHandler.sendPacket(new DeathMessageS2CPacket(this.getId(), Text.empty()));
     }
 
     @Shadow
@@ -366,6 +367,14 @@ abstract class ServerPlayerEntityMixin extends PlayerEntity implements ServerShe
 
     @Shadow
     protected abstract void worldChanged(ServerWorld origin);
+
+    @Shadow public abstract ServerWorld getServerWorld();
+
+    @Shadow public abstract boolean isInTeleportationState();
+
+    @Shadow private boolean inTeleportationState;
+
+    @Shadow public abstract void onTeleportationDone();
 
     @Inject(method = "writeCustomDataToNbt", at = @At("TAIL"))
     private void writeCustomDataToNbt(NbtCompound nbt, CallbackInfo ci) {
@@ -414,15 +423,16 @@ abstract class ServerPlayerEntityMixin extends PlayerEntity implements ServerShe
         this.shellDirty = true;
     }
 
-    @Inject(method = "setWorld", at = @At("HEAD"))
+    @Inject(method = "setServerWorld", at = @At("HEAD"))
     private void setWorld(ServerWorld world, CallbackInfo ci) {
-        if (world != this.world) {
+        if (world != this.getWorld()) {
             this.shellDirty = true;
         }
     }
 
     @Unique
     private void teleport(ServerWorld targetWorld, BlockPos pos) {
+        this.inTeleportationState = true;
         Chunk chunk = targetWorld.getChunk(pos);
         double x = pos.getX() + 0.5;
         double y = pos.getY();
@@ -430,26 +440,25 @@ abstract class ServerPlayerEntityMixin extends PlayerEntity implements ServerShe
         float yaw = BlockPosUtil.getHorizontalFacing(pos, chunk).map(d -> d.getOpposite().asRotation()).orElse(0F);
         float pitch = 0;
 
-        if (this.world == targetWorld) {
-            this.setRotation(yaw, pitch);
-            this.refreshPositionAfterTeleport(x, y, z);
+        if (this.getWorld() == targetWorld) {
+            this.networkHandler.requestTeleport(x, y, z, yaw, pitch);
+            this.onTeleportationDone();
             return;
         }
 
-        ServerWorld serverWorld = (ServerWorld)this.world;
+        ServerWorld serverWorld = (ServerWorld)this.getServerWorld();
         ServerPlayerEntity serverPlayer = (ServerPlayerEntity)(Object)this;
 
         WorldProperties worldProperties = targetWorld.getLevelProperties();
-        serverPlayer.networkHandler.sendPacket(new PlayerRespawnS2CPacket(targetWorld.getDimensionKey(), targetWorld.getRegistryKey(), BiomeAccess.hashSeed(targetWorld.getSeed()), serverPlayer.interactionManager.getGameMode(), serverPlayer.interactionManager.getPreviousGameMode(), targetWorld.isDebugWorld(), targetWorld.isFlat(), true, this.getLastDeathPos()));
+        serverPlayer.networkHandler.sendPacket(new PlayerRespawnS2CPacket(new CommonPlayerSpawnInfo(targetWorld.getDimensionKey(), targetWorld.getRegistryKey(), BiomeAccess.hashSeed(targetWorld.getSeed()), serverPlayer.interactionManager.getGameMode(), serverPlayer.interactionManager.getPreviousGameMode(), targetWorld.isDebugWorld(), targetWorld.isFlat(), this.getLastDeathPos(), this.getId()), (byte) 3));
         serverPlayer.networkHandler.sendPacket(new DifficultyS2CPacket(worldProperties.getDifficulty(), worldProperties.isDifficultyLocked()));
-        PlayerManager playerManager = Objects.requireNonNull(this.world.getServer()).getPlayerManager();
+        PlayerManager playerManager = Objects.requireNonNull(this.getWorld().getServer()).getPlayerManager();
         playerManager.sendCommandTree(serverPlayer);
         serverWorld.removePlayer(serverPlayer, RemovalReason.CHANGED_DIMENSION);
         this.unsetRemoved();
         serverPlayer.setWorld(targetWorld);
         targetWorld.onPlayerChangeDimension(serverPlayer);
-        this.setRotation(yaw, pitch);
-        this.refreshPositionAfterTeleport(x, y, z);
+        this.networkHandler.requestTeleport(x, y, z, yaw, pitch);
         this.worldChanged(targetWorld);
         serverPlayer.networkHandler.sendPacket(new PlayerAbilitiesS2CPacket(serverPlayer.getAbilities()));
         playerManager.sendWorldInfo(serverPlayer, targetWorld);
@@ -457,5 +466,6 @@ abstract class ServerPlayerEntityMixin extends PlayerEntity implements ServerShe
         for (StatusEffectInstance statusEffectInstance : this.getStatusEffects()) {
             this.networkHandler.sendPacket(new EntityStatusEffectS2CPacket(this.getId(), statusEffectInstance));
         }
+        this.onTeleportationDone();
     }
 }

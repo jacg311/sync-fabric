@@ -14,6 +14,7 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.entity.EntityRenderDispatcher;
 import net.minecraft.client.util.math.MatrixStack;
@@ -21,7 +22,8 @@ import net.minecraft.text.Text;
 import net.minecraft.util.DyeColor;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec3f;
+import net.minecraft.util.math.RotationAxis;
+import org.joml.Vector3f;
 
 import java.util.function.BiPredicate;
 
@@ -114,31 +116,41 @@ public class ShellSelectorButtonWidget extends AbstractWidget {
     }
 
     @Override
+    public void setFocused(boolean focused) {
+
+    }
+
+    @Override
+    public boolean isFocused() {
+        return false;
+    }
+
+    @Override
+    protected void renderContent(DrawContext drawContext, int mouseX, int mouseY, float delta) {
+        this.renderSector(drawContext.getMatrices());
+
+        if (this.shell != null) {
+            if (this.shell.getProgress() < ShellState.PROGRESS_PRINTING) {
+                this.renderShellAndProgress(drawContext);
+            } else {
+                MSAAFramebuffer.renderAfterUsage(() -> this.renderShellAndProgress(drawContext));
+            }
+        }
+    }
+
+    @Override
     protected void onMouseClick(double mouseX, double mouseY, int button) {
         MinecraftClient client = MinecraftClient.getInstance();
         if (client.player == null || this.shell == null || this.shell.getProgress() < ShellState.PROGRESS_DONE) {
             return;
         }
 
-        PlayerSyncEvents.SyncFailureReason failureReason = ((ClientShell)client.player).beginSync(this.shell);
+        PlayerSyncEvents.SyncFailureReason failureReason = ((ClientShell) client.player).beginSync(this.shell);
         if (failureReason != null) {
             if (client.currentScreen != null) {
                 client.currentScreen.close();
             }
             client.player.sendMessage(failureReason.toText(), true);
-        }
-    }
-
-    @Override
-    protected void renderContent(MatrixStack matrices, int mouseX, int mouseY, float delta) {
-        this.renderSector(matrices);
-
-        if (this.shell != null) {
-            if (this.shell.getProgress() < ShellState.PROGRESS_PRINTING) {
-                this.renderShellAndProgress(matrices);
-            } else {
-                MSAAFramebuffer.renderAfterUsage(() -> this.renderShellAndProgress(matrices));
-            }
         }
     }
 
@@ -155,14 +167,14 @@ public class ShellSelectorButtonWidget extends AbstractWidget {
         }
     }
 
-    private void renderShellAndProgress(MatrixStack matrices) {
-        this.renderShell(matrices);
+    private void renderShellAndProgress(DrawContext drawContext) {
+        this.renderShell(drawContext);
         if (this.shell.getProgress() < ShellState.PROGRESS_DONE) {
-            this.renderProgress(matrices);
+            this.renderProgress(drawContext);
         }
     }
 
-    private void renderShell(MatrixStack matrices) {
+    private void renderShell(DrawContext drawContext) {
         final double SHELL_WIDTH_HALF = 0.26F;
         final double SHELL_HEIGHT_HALF = 0.35F;
         final float SHELL_SCALE = 0.365F;
@@ -179,13 +191,15 @@ public class ShellSelectorButtonWidget extends AbstractWidget {
         double tY = shellCY + this.diffR * SHELL_HEIGHT_HALF;
         float scale = (float)this.diffR * SHELL_SCALE;
 
+        MatrixStack matrices = drawContext.getMatrices();
+
         matrices.push();
         matrices.translate(tX, tY, this.majorR);
         matrices.scale(scale, -scale, 1F);
-        matrices.multiply(Vec3f.POSITIVE_X.getDegreesQuaternion(15));
-        matrices.multiply(Vec3f.POSITIVE_Y.getDegreesQuaternion(40));
+        matrices.multiply(RotationAxis.POSITIVE_X.rotationDegrees(15));
+        matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(40));
 
-        RenderSystem.setupGui3DDiffuseLighting(new Vec3f((float)this.cX * 2, (float)this.cY * 2, -1), new Vec3f(0, 0, 1));
+        RenderSystem.setupGui3DDiffuseLighting(new Vector3f((float)this.cX * 2, (float)this.cY * 2, -1), new Vector3f(0, 0, 1));
         MatrixStackStorage.saveModelMatrixStack(matrices);
         VertexConsumerProvider.Immediate immediate = RenderSystemUtil.getEntityVertexConsumerProvider();
         EntityRenderDispatcher renderDispatcher = MinecraftClient.getInstance().getEntityRenderDispatcher();
@@ -195,7 +209,7 @@ public class ShellSelectorButtonWidget extends AbstractWidget {
         matrices.pop();
     }
 
-    private void renderProgress(MatrixStack matrices) {
+    private void renderProgress(DrawContext drawContext) {
         final float FONT_SCALE = 0.15F;
         final float BOX_SCALE = 1.6F;
 
@@ -215,10 +229,12 @@ public class ShellSelectorButtonWidget extends AbstractWidget {
         float boxTop = shellCY - boxHeight / 2 - textRenderer.fontHeight * fontScale * 0.125F;
         float boxLeft = shellCX - progressBoxWidth / 2F;
 
+        MatrixStack matrices = drawContext.getMatrices();
+
         matrices.push();
         matrices.translate(0, 0, this.majorR * 2);
         RenderSystemUtil.drawRectangle(matrices, boxLeft, boxTop, progressBoxWidth, boxHeight, boxHeight * 0.25F, 1F, 0, (float)this.step, 0F, 0F, 0F, 0.8F);
-        RenderSystemUtil.drawCenteredText(progressText, matrices, shellCX, shellCY, fontScale, ColorUtil.fromDyeColor(DyeColor.WHITE), true);
+        RenderSystemUtil.drawCenteredText(drawContext, progressText, shellCX, shellCY, fontScale, ColorUtil.fromDyeColor(DyeColor.WHITE), true);
         matrices.pop();
     }
 

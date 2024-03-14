@@ -6,14 +6,19 @@ import dev.kir.sync.util.math.QuarticFunction;
 import dev.kir.sync.util.math.Radians;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.DyeColor;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec3f;
+import net.minecraft.util.math.RotationAxis;
+
+import java.util.function.Supplier;
 
 @Environment(EnvType.CLIENT)
-public class ArrowButtonWidget extends AbstractButtonWidget {
+public class ArrowButtonWidget extends ButtonWidget {
     private static final Text DEFAULT_DESCRIPTION = null;
     private static final int DEFAULT_COLOR = ColorUtil.fromDyeColor(DyeColor.WHITE);
     private static final float DEFAULT_STEP = Radians.R_PI_32;
@@ -48,7 +53,7 @@ public class ArrowButtonWidget extends AbstractButtonWidget {
     }
 
     public ArrowButtonWidget(float x, float y, float width, float height, ArrowType type, float thickness, float step, int color, Text description, Runnable onClick) {
-        super(x, y, type.isVertical() ? width : height, type.isVertical() ? height : width, onClick);
+        super((int) x, (int) y, (int) (type.isVertical() ? width : height), (int) (type.isVertical() ? height : width), description, button -> onClick.run(), textSupplier -> Text.empty());
         this.type = type;
         this.step = step;
         this.color = ColorUtil.toRGBA(color);
@@ -68,26 +73,21 @@ public class ArrowButtonWidget extends AbstractButtonWidget {
     }
 
     @Override
-    protected void renderContent(MatrixStack matrices, int mouseX, int mouseY, float delta) {
-        matrices.push();
-        this.type.transform(matrices, this.x, this.y, this.width, this.height);
-        RenderSystemUtil.drawRectangle(matrices, this.x0, this.y0, this.stickWidth, this.stickHeight, this.borderRadius, 1F, -this.angle, this.step, color[0], color[1], color[2], color[3]);
-        RenderSystemUtil.drawRectangle(matrices, this.x1, this.y1, this.stickWidth, this.stickHeight, this.borderRadius, 1F, this.angle, this.step, color[0], color[1], color[2], color[3]);
-        matrices.pop();
+    public void renderWidget(DrawContext drawContext, int mouseX, int mouseY, float delta) {
+        drawContext.getMatrices().push();
+        this.type.transform(drawContext.getMatrices(), this.getX(), this.getY(), this.width, this.height);
+        RenderSystemUtil.drawRectangle(drawContext.getMatrices(), this.x0, this.y0, this.stickWidth, this.stickHeight, this.borderRadius, 1F, -this.angle, this.step, color[0], color[1], color[2], color[3]);
+        RenderSystemUtil.drawRectangle(drawContext.getMatrices(), this.x1, this.y1, this.stickWidth, this.stickHeight, this.borderRadius, 1F, this.angle, this.step, color[0], color[1], color[2], color[3]);
+        drawContext.getMatrices().pop();
     }
 
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
         if (this.visible && this.type.isValidKey(keyCode)) {
-            this.onMouseClick(0, 0, 0);
+            this.mouseClicked(0, 0, 0);
             return true;
         }
         return false;
-    }
-
-    @Override
-    protected Text getWidgetDescription() {
-        return this.description;
     }
 
     public enum ArrowType {
@@ -147,7 +147,7 @@ public class ArrowButtonWidget extends AbstractButtonWidget {
                 height = tmp;
             }
             matrices.translate(x, y, 0);
-            matrices.multiply(Vec3f.POSITIVE_Z.getRadialQuaternion(Radians.R_PI_2 * this.i));
+            matrices.multiply(RotationAxis.POSITIVE_Z.rotation(Radians.R_PI_2 * this.i));
             matrices.translate(-x - (this.i == 2 || this.i == 3 ? width : 0), -y - ((this.i == 1 || this.i == 2 ? height : 0)), 0);
         }
     }

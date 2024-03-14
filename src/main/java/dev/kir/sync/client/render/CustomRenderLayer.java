@@ -33,7 +33,7 @@ public final class CustomRenderLayer extends RenderLayer {
     }
 
     static {
-        VOXELS = CustomGameRenderer.getRenderTypeVoxelShader().getRenderLayer(of("voxels", CustomVertexFormats.POSITION_COLOR_OVERLAY_LIGHT_NORMAL, VertexFormat.DrawMode.QUADS, 256, false, false, RenderLayer.MultiPhaseParameters.builder().shader(RenderPhase.SOLID_SHADER).transparency(NO_TRANSPARENCY).cull(DISABLE_CULLING).lightmap(ENABLE_LIGHTMAP).overlay(ENABLE_OVERLAY_COLOR).build(true)));
+        VOXELS = CustomGameRenderer.getRenderTypeVoxelShader().getRenderLayer(of("voxels", CustomVertexFormats.POSITION_COLOR_OVERLAY_LIGHT_NORMAL, VertexFormat.DrawMode.QUADS, 256, false, false, RenderLayer.MultiPhaseParameters.builder().program(RenderPhase.SOLID_PROGRAM).transparency(NO_TRANSPARENCY).cull(DISABLE_CULLING).lightmap(ENABLE_LIGHTMAP).overlay(ENABLE_OVERLAY_COLOR).build(true)));
         ENTITY_TRANSLUCENT_PARTIALLY_TEXTURED = Util.memoize((id, outline) -> CustomGameRenderer.getRenderTypeEntityTranslucentPartiallyTexturedShader().getRenderLayer(RenderLayer.getEntityTranslucent(id, outline)));
     }
 }

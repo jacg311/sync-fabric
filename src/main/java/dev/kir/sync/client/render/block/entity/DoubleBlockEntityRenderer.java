@@ -14,7 +14,7 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.state.property.Properties;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.Vec3f;
+import net.minecraft.util.math.RotationAxis;
 
 @Environment(EnvType.CLIENT)
 public abstract class DoubleBlockEntityRenderer<T extends BlockEntity & DoubleBlockEntity> implements BlockEntityRenderer<T> {
@@ -35,7 +35,7 @@ public abstract class DoubleBlockEntityRenderer<T extends BlockEntity & DoubleBl
 
         matrices.translate(0.5D, 0.75D, 0.5D);
         matrices.scale(-0.5F, -0.5F, 0.5F);
-        matrices.multiply(Vec3f.POSITIVE_Y.getDegreesQuaternion(rotation));
+        matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(rotation));
 
         DoubleBlockModel model = this.getModel(blockEntity, blockState, tickDelta);
         VertexConsumer consumer = vertexConsumers.getBuffer(model.getLayer(this.getTextureId()));

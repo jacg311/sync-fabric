@@ -4,8 +4,8 @@ import dev.kir.sync.api.shell.ShellPriority;
 import dev.kir.sync.compat.cloth.SyncClothConfig;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.entity.EntityType;
+import net.minecraft.registry.Registries;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.registry.Registry;
 
 import java.util.List;
 import java.util.UUID;
@@ -130,11 +130,11 @@ public interface SyncConfig {
 
         default EntityType<?> getEntityType() {
             Identifier id = Identifier.tryParse(this.entityId());
-            return id == null ? EntityType.PIG : Registry.ENTITY_TYPE.get(id);
+            return id == null ? EntityType.PIG : Registries.ENTITY_TYPE.get(id);
         }
 
         static EnergyMapEntry of(EntityType<?> entityType, long outputEnergyQuantity) {
-            return of(Registry.ENTITY_TYPE.getId(entityType).toString(), outputEnergyQuantity);
+            return of(Registries.ENTITY_TYPE.getId(entityType).toString(), outputEnergyQuantity);
         }
 
         static EnergyMapEntry of(String id, long outputEnergyQuantity) {

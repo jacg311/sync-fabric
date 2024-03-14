@@ -27,7 +27,7 @@ import java.util.stream.Stream;
 public class Technoblade extends AbstractClientPlayerEntity {
     private static final Identifier TECHNOBLADE_SKIN = Sync.locate("textures/entity/technoblade.png");
     private static final GameProfile TECHNOBLADE_GAME_PROFILE = new GameProfile(UUID.fromString("b876ec32-e396-476b-a115-8438d83c67d4"), "Technoblade");
-    private static final PlayerListEntry TECHNOBLADE_PLAYER_LIST_ENTRY = new PlayerListEntry(new PlayerListS2CPacket.Entry(TECHNOBLADE_GAME_PROFILE, 0, GameMode.CREATIVE, null, null), null, false);
+    private static final PlayerListEntry TECHNOBLADE_PLAYER_LIST_ENTRY = new PlayerListEntry(TECHNOBLADE_GAME_PROFILE, false);
     // Feel free to add new quotes to this list if you are reading this
     private static final List<Text> TECHNOBLADE_QUOTES = Stream.of(
             "so long nerds",
@@ -43,15 +43,15 @@ public class Technoblade extends AbstractClientPlayerEntity {
     private int ticksSinceLastQuote = 0;
 
     private Technoblade(ClientWorld world) {
-        super(world, TECHNOBLADE_GAME_PROFILE, null);
+        super(world, TECHNOBLADE_GAME_PROFILE);
     }
 
     public static Technoblade from(LivingEntity entity) {
-        if (!(entity.world.isClient)) {
+        if (!(entity.getWorld().isClient)) {
             return null;
         }
 
-        Technoblade Technoblade = new Technoblade((ClientWorld)entity.world);
+        Technoblade Technoblade = new Technoblade((ClientWorld)entity.getWorld());
         Technoblade.copyPose(entity);
         return Technoblade;
     }
@@ -59,16 +59,6 @@ public class Technoblade extends AbstractClientPlayerEntity {
     @Override
     protected PlayerListEntry getPlayerListEntry() {
         return TECHNOBLADE_PLAYER_LIST_ENTRY;
-    }
-
-    @Override
-    public Identifier getSkinTexture() {
-        return TECHNOBLADE_SKIN;
-    }
-
-    @Override
-    public String getModel() {
-        return "default";
     }
 
     @Override
@@ -123,10 +113,6 @@ public class Technoblade extends AbstractClientPlayerEntity {
     }
 
     public void copyPose(LivingEntity entity) {
-        this.limbDistance = entity.limbDistance;
-        this.lastLimbDistance = entity.lastLimbDistance;
-        this.limbAngle = entity.limbAngle;
-
         this.copyPositionAndRotation(entity);
         this.lastRenderX = entity.lastRenderX;
         this.lastRenderY = entity.lastRenderY;

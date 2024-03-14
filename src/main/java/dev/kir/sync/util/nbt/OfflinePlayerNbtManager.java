@@ -2,6 +2,7 @@ package dev.kir.sync.util.nbt;
 
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtIo;
+import net.minecraft.nbt.NbtSizeTracker;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.WorldSavePath;
 import org.apache.logging.log4j.Level;
@@ -28,9 +29,9 @@ public final class OfflinePlayerNbtManager {
                 return;
             }
 
-            NbtCompound nbt = NbtIo.readCompressed(nbtPath);
+            NbtCompound nbt = NbtIo.readCompressed(nbtPath.toPath(), NbtSizeTracker.ofUnlimitedBytes());
             nbt = nbtEditor.apply(nbt);
-            NbtIo.writeCompressed(nbt, nbtPath);
+            NbtIo.writeCompressed(nbt, nbtPath.toPath());
         } catch (Throwable exception) {
             LOGGER.log(Level.ERROR, "Failed to edit player's nbt.", exception);
         }

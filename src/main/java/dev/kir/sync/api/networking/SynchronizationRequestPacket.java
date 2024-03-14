@@ -14,6 +14,7 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
+import net.minecraft.world.World;
 
 import java.util.Objects;
 import java.util.UUID;
@@ -55,7 +56,7 @@ public class SynchronizationRequestPacket implements ServerPlayerPacket {
         ShellState state = shell.getShellStateByUuid(this.shellUuid);
 
         BlockPos currentPos = player.getBlockPos();
-        ServerWorld currentWorld = player.getWorld();
+        World currentWorld = player.getWorld();
         Identifier currentWorldId = WorldUtil.getId(currentWorld);
         Direction currentFacing = BlockPosUtil.getHorizontalFacing(currentPos, currentWorld).orElse(player.getHorizontalFacing().getOpposite());
 

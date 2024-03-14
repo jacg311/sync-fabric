@@ -13,7 +13,7 @@ import net.minecraft.client.render.GameRenderer;
 import net.minecraft.client.render.VertexFormats;
 import net.minecraft.client.render.item.HeldItemRenderer;
 import net.minecraft.resource.ResourceManager;
-import net.minecraft.util.math.Matrix4f;
+import org.joml.Matrix4f;
 
 @Environment(EnvType.CLIENT)
 public final class CustomGameRenderer extends GameRenderer {

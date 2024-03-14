@@ -1,17 +1,11 @@
 package dev.kir.sync.entity.damage;
 
 import net.minecraft.entity.damage.DamageSource;
+import net.minecraft.entity.damage.DamageType;
+import net.minecraft.registry.RegistryKey;
+import net.minecraft.registry.RegistryKeys;
+import net.minecraft.util.Identifier;
 
-public class FingerstickDamageSource extends DamageSource {
-    private static final DamageSource FINGERSTICK = new FingerstickDamageSource("sync.fingerstick");
+public class FingerstickDamageSource {
 
-    private FingerstickDamageSource(String name) {
-        super(name);
-        this.setUnblockable();
-        this.setBypassesArmor();
-    }
-
-    public static DamageSource getInstance() {
-        return FINGERSTICK;
-    }
 }

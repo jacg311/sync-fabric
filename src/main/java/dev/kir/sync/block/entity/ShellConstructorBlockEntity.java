@@ -11,8 +11,10 @@ import dev.kir.sync.entity.damage.FingerstickDamageSource;
 import dev.kir.sync.Sync;
 import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
 import net.minecraft.block.BlockState;
+import net.minecraft.entity.damage.DamageTypes;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Items;
+import net.minecraft.registry.RegistryKeys;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
@@ -69,7 +71,7 @@ public class ShellConstructorBlockEntity extends AbstractShellContainerBlockEnti
                 return PlayerSyncEvents.ShellConstructionFailureReason.NOT_ENOUGH_HEALTH;
             }
 
-            player.damage(FingerstickDamageSource.getInstance(), damage);
+            player.damage(world.getDamageSources().sweetBerryBush(), damage);
             this.shell = ShellState.empty(serverPlayer, pos);
             if (isCreative && config.enableInstantShellConstruction()) {
                 this.shell.setProgress(ShellState.PROGRESS_DONE);

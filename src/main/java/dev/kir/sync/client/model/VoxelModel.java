@@ -11,8 +11,9 @@ import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.render.entity.model.AnimalModel;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.Pair;
+import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec3f;
+import org.joml.Vector3f;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -41,17 +42,18 @@ public class VoxelModel extends Model {
         this.completeness = 0;
         this.voxels = voxels.collect(Collectors.toList());
 
-        this.voxel = new ModelPart(List.of(new ModelPart.Cuboid(0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, true, 1, 1)), Map.of());
+        // TODO IS THIS RIGHT
+        this.voxel = new ModelPart(List.of(new ModelPart.Cuboid(0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, true, 1, 1, Arrays.stream(Direction.values()).collect(Collectors.toSet()))), Map.of());
 
-        Pair<Vec3f, Vec3f> pivotAndSize = computePivotAndSize(isUpsideDown, this.voxels);
-        Vec3f pivot = pivotAndSize.getLeft();
-        Vec3f size = pivotAndSize.getRight();
-        this.pivotX = pivot.getX();
-        this.pivotY = pivot.getY();
-        this.pivotZ = pivot.getZ();
-        this.sizeX = size.getX();
-        this.sizeY = size.getY();
-        this.sizeZ = size.getZ();
+        Pair<Vector3f, Vector3f> pivotAndSize = computePivotAndSize(isUpsideDown, this.voxels);
+        Vector3f pivot = pivotAndSize.getLeft();
+        Vector3f size = pivotAndSize.getRight();
+        this.pivotX = pivot.x();
+        this.pivotY = pivot.y();
+        this.pivotZ = pivot.z();
+        this.sizeX = size.x();
+        this.sizeY = size.y();
+        this.sizeZ = size.z();
 
         this.seed = seed;
         this.random = new Random();
@@ -144,9 +146,11 @@ public class VoxelModel extends Model {
         ).flatMap(ModelUtil::asVoxels);
     }
 
-    private static Pair<Vec3f, Vec3f> computePivotAndSize(boolean isUpsideDown, List<Voxel> voxels) {
+    private static Vector3f ZERO = new Vector3f(0, 0, 0);
+
+    private static Pair<Vector3f, Vector3f> computePivotAndSize(boolean isUpsideDown, List<Voxel> voxels) {
         if (voxels.size() == 0) {
-            return new Pair<>(Vec3f.ZERO, Vec3f.ZERO);
+            return new Pair<>(ZERO, ZERO);
         }
 
         float minX = Float.MAX_VALUE;
@@ -180,13 +184,13 @@ public class VoxelModel extends Model {
         int signX = isUpsideDown ? -1 : 1;
         int signY = isUpsideDown ? -1 : 1;
 
-        Vec3f pivot = new Vec3f(
+        Vector3f pivot = new Vector3f(
             signX == 1 ? minX : maxX,
             signY == 1 ? minY : maxY,
             minZ
         );
 
-        Vec3f size = new Vec3f(
+        Vector3f size = new Vector3f(
             signX * (maxX - minX + 1),
             signY * (maxY - minY + 1),
             (maxZ - minZ + 1)

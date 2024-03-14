@@ -6,6 +6,7 @@ import dev.kir.sync.util.math.QuarticFunction;
 import dev.kir.sync.util.math.Radians;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 import net.minecraft.util.DyeColor;
@@ -64,13 +65,24 @@ public class CrossButtonWidget extends AbstractButtonWidget {
     }
 
     @Override
-    protected void renderContent(MatrixStack matrices, int mouseX, int mouseY, float delta) {
-        RenderSystemUtil.drawRectangle(matrices, this.x0, this.y0, this.stickWidth, this.stickHeight, this.borderRadius, 1, -this.angle, this.step, this.color[0], this.color[1], this.color[2], this.color[3]);
-        RenderSystemUtil.drawRectangle(matrices, this.x1, this.y1, this.stickWidth, this.stickHeight, this.borderRadius, 1, this.angle, this.step, this.color[0], this.color[1], this.color[2], this.color[3]);
+    protected void renderContent(DrawContext drawContext, int mouseX, int mouseY, float delta) {
+        RenderSystemUtil.drawRectangle(drawContext.getMatrices(), this.x0, this.y0, this.stickWidth, this.stickHeight, this.borderRadius, 1, -this.angle, this.step, this.color[0], this.color[1], this.color[2], this.color[3]);
+        RenderSystemUtil.drawRectangle(drawContext.getMatrices(), this.x1, this.y1, this.stickWidth, this.stickHeight, this.borderRadius, 1, this.angle, this.step, this.color[0], this.color[1], this.color[2], this.color[3]);
     }
 
     @Override
     protected Text getWidgetDescription() {
         return this.description;
+    }
+
+    private boolean focused;
+    @Override
+    public void setFocused(boolean focused) {
+        this.focused = focused;
+    }
+
+    @Override
+    public boolean isFocused() {
+        return focused;
     }
 }

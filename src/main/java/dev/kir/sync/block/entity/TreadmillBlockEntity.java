@@ -16,8 +16,8 @@ import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.passive.TameableEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
-import net.minecraft.network.Packet;
 import net.minecraft.network.listener.ClientPlayPacketListener;
+import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.s2c.play.BlockEntityUpdateS2CPacket;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
@@ -94,7 +94,7 @@ public class TreadmillBlockEntity extends BlockEntity implements DoubleBlockEnti
         }
 
         if (this.runner instanceof LivingEntity livingEntity) {
-            livingEntity.limbDistance = 1.5F + 2F * this.runningTime / MAX_RUNNING_TIME;
+            livingEntity.limbAnimator.updateLimbs((float) this.runningTime / MAX_RUNNING_TIME, 1.0f);
         }
         this.runningTime = Math.min(++this.runningTime, MAX_RUNNING_TIME);
     }

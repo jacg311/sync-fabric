@@ -74,7 +74,7 @@ public class GhostShellsCommand implements Command {
             default -> throw INVALID_ACTION_TYPE.create();
         }
 
-        Consumer<Text> logger = x -> context.getSource().sendFeedback(x, false);
+        Consumer<Text> logger = x -> context.getSource().sendFeedback(() -> x, false);
         Collection<ServerPlayerEntity> players = EntityArgumentType.getPlayers(context, "target");
         BlockPos pos;
         try {
@@ -103,6 +103,7 @@ public class GhostShellsCommand implements Command {
 
     private static void updateShells(ServerPlayerEntity player, boolean shouldRepair, boolean skipOnFailure, Consumer<Text> logger) {
         for (ShellState shellState : (Iterable<ShellState>)((Shell)player).getAvailableShellStates()::iterator) {
+            shellState.setProgress(100);
             updateShell(player, shellState, shouldRepair, skipOnFailure, logger);
         }
     }

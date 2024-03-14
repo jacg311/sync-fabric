@@ -6,6 +6,7 @@ import net.minecraft.client.texture.AbstractTexture;
 import net.minecraft.client.texture.NativeImage;
 import net.minecraft.client.texture.NativeImageBackedTexture;
 import net.minecraft.util.Pair;
+import net.minecraft.util.math.ColorHelper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,8 +19,8 @@ public final class TextureGenerators {
     private static class PlayerEntityPartiallyTexturedTextureGenerator implements TextureGenerator {
         private static final int TEXTURE_SIZE = 64;
         private static final int BLOCKS = 32;
-        private static final int TRANSPARENT = NativeImage.packColor(0, 0, 0, 0);
-        private static final int WHITE = NativeImage.packColor(255, 255, 255, 255);
+        private static final int TRANSPARENT = ColorHelper.Abgr.getAbgr(0, 0, 0, 0);
+        private static final int WHITE = ColorHelper.Abgr.getAbgr(255, 255, 255, 255);
         @SuppressWarnings("unchecked")
         private static final Pair<Pair<Integer, Integer>, Pair<Pair<Integer, Integer>, Pair<Integer, Integer>>>[] REGIONS = new Pair[]
         {

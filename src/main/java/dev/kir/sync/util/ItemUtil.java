@@ -6,12 +6,15 @@ import net.minecraft.block.DispenserBlock;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.item.*;
-import net.minecraft.tag.TagKey;
+import net.minecraft.registry.BuiltinRegistries;
+import net.minecraft.registry.Registries;
+import net.minecraft.registry.RegistryKey;
+import net.minecraft.registry.RegistryKeys;
+import net.minecraft.registry.tag.TagKey;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.registry.Registry;
 
 public final class ItemUtil {
-    private static final TagKey<Item> WRENCHES = TagKey.of(Registry.ITEM_KEY, new Identifier("c:wrenches"));
+    private static final TagKey<Item> WRENCHES = TagKey.of(RegistryKeys.ITEM, new Identifier("c:wrenches"));
 
     public static boolean isWrench(ItemStack itemStack) {
         if (itemStack.isIn(WRENCHES)) {
@@ -23,7 +26,7 @@ public final class ItemUtil {
         if (wrenchId == null) {
             return false;
         }
-        Item wrench = Registry.ITEM.get(wrenchId);
+        Item wrench = Registries.ITEM.get(wrenchId);
         return wrench != Items.AIR && itemStack.isOf(wrench);
     }
 
