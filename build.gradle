@@ -15,7 +15,7 @@ buildscript {
 }
 
 plugins {
-    id "fabric-loom" version "1.5-SNAPSHOT"
+    id "fabric-loom" version "1.6-SNAPSHOT"
     id "org.ajoberstar.grgit" version "4.1.0"
 }
 
@@ -39,6 +39,7 @@ loom {
 }
 
 repositories {
+    maven { url "https://maven.shedaniel.me/" }
     maven {
         name = "TerraformersMC"
         url = "https://maven.terraformersmc.com/"
@@ -46,18 +47,6 @@ repositories {
     maven {
         name = "Ladysnake Libs"
         url = 'https://maven.ladysnake.org/releases'
-        content {
-            includeGroup 'io.github.ladysnake'
-            includeGroup 'org.ladysnake'
-            includeGroupByRegex 'dev\\.onyxstudios.*'
-        }
-    }
-    maven {
-        name = "Cloth Config"
-        url = "https://maven.shedaniel.me/"
-        content {
-            includeGroup "me.shedaniel.cloth"
-        }
     }
     maven {
         name = "Nexus OSS Repository"
@@ -66,9 +55,6 @@ repositories {
     maven {
         name = "Modrinth"
         url = "https://api.modrinth.com/maven"
-        content {
-            includeGroup "maven.modrinth"
-        }
     }
     maven {
         name = "CrowdinTranslate"
@@ -77,21 +63,12 @@ repositories {
     maven {
         name = "JitPack"
         url = "https://jitpack.io"
-        content {
-            includeGroupByRegex "(io|com)\\.github\\..*"
-        }
     }
     maven {
         url = "https://maven.jamieswhiteshirt.com/libs-release/"
-        content {
-            includeGroup "com.jamieswhiteshirt"
-        }
     }
     maven {
         url = "https://maven.cafeteria.dev"
-        content {
-            includeGroup "net.adriantodt.fabricmc"
-        }
     }
     maven {
         name = 'Quilt'
